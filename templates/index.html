@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WiFi Billboard</title>
+    <link href="{{ url_for('static', path='/index.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <form method="POST" action="/message" >
+            <textarea id="message" name="message" rows="4" cols="50" placeholder="Say something..." autofocus></textarea>
+            <br>
+            <input type="submit" value="OK">
+        </form>
+        <p><b>M:</b> {{ message }}</p>
+
+        <form method="POST" action="/question" >
+            <textarea id="question" name="question" rows="4" cols="50" placeholder="Ask away..."></textarea>
+            <br>
+            <input type="submit" value="OK">
+        </form>
+
+        <p><b>Q:</b> {{ question }}</p>
+        <p><b>A:</b> {{ answer }}</p>
+    </div>
+</body>
+</html>
