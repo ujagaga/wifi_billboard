@@ -53,5 +53,5 @@ def ask_question(question: Optional[str] = Form("")):
 
 @app.post("/message")
 def post_message(message: Optional[str] = Form("")):
-    print("M:", message)
+    send_to_monitor(message)
     return RedirectResponse(f"/?message={message}", status_code=status.HTTP_302_FOUND)
