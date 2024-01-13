@@ -1,0 +1,17 @@
+[Unit]
+Description=WiFi Billboard service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+User=rada
+Group=rada
+Restart=always
+RestartSec=10s
+ExecStart=/home/rada/Projects/wifi_billboard/run.sh
+WorkingDirectory=/home/rada/Projects/wifi_billboard
+
+[Install]
+WantedBy=multi-user.target

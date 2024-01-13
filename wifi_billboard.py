@@ -6,11 +6,28 @@ from fastapi.responses import RedirectResponse
 import starlette.status as status
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
+import subprocess
 
+# sudo cec-ctl --list-devices
+# sudo cec-ctl -d/dev/cec0 --playback -S
+# cec-ctl -d/dev/cec0 --to 0 --active-source phys-addr=1.0.0.0
+# Writing to screen: echo "foo" > /dev/tty0
+
+
+TV_ADDR = "1.0.0.0"
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates/")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+def send_to_monitor(message, endpoint="/dev/tty0"):
+    with open(endpoint, "a") as display:
+        display.write(message)
+
+
+def grab_hdmi_focus():
+    subprocess.run(["cec-ctl", "-d/dev/cec0", "--t0", "--active-source", f"phys-addr={TV_ADDR}"])
 
 
 @app.get("/")

@@ -3,7 +3,7 @@
 # This script should be run as user, and the app will be available via port 80
 
 apt update
-apt -y install -y python3-pip
+apt -y install -y python3-pip v4l-utils
 pip3 install "fastapi[all]"
 
 SERVICE_NAME=billboard.service
