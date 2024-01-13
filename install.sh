@@ -1,16 +1,18 @@
 #!/bin/bash
 
 # This script should be run as user, and the app will be available via port 80
+SCRIPT_RELATIVE_PATH=$(dirname "$0")
+SCRIPT_FULL_PATH="$(realpath -s $0)"
+SCRIPT_DIR="$(dirname $SCRIPT_FULL_PATH)"
 
-apt update
-apt -y install -y python3-pip v4l-utils
-pip3 install "fastapi[all]"
+sudo apt update
+sudo apt -y install -y v4l-utils python3-fastapi
 
 SERVICE_NAME=billboard.service
 SERVICE_FILE=/etc/systemd/system/$SERVICE_NAME
 
 # Disable existing service if any
-systemctl disable $SERVICE_NAME
+sudo systemctl disable $SERVICE_NAME
 
 # Create new startup service
 {
@@ -32,7 +34,7 @@ echo
 echo "[Install]"
 echo WantedBy=multi-user.target
 } > temp.service
-mv temp.service $SERVICE_FILE
+sudo mv temp.service $SERVICE_FILE
 
 # Enable service
-systemctl enable $SERVICE_NAME
+sudo systemctl enable $SERVICE_NAME

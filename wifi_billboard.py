@@ -7,27 +7,27 @@ import starlette.status as status
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
 import subprocess
+from config import DEV_ID, PHY_ADDR, LOGIC_ADDR, HDMI_CONSOLE
 
-# sudo cec-ctl --list-devices
-# sudo cec-ctl -d/dev/cec0 --playback -S
-# cec-ctl -d/dev/cec0 --to 0 --active-source phys-addr=1.0.0.0
-# Writing to screen: echo "foo" > /dev/tty0
-
-
-TV_ADDR = "1.0.0.0"
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates/")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-def send_to_monitor(message, endpoint="/dev/tty0"):
-    with open(endpoint, "a") as display:
-        display.write(message)
+def send_to_monitor(message):
+    subprocess.run(['sudo', '/bin/bash', '/tmp/write_tty', message])
 
 
 def grab_hdmi_focus():
-    subprocess.run(["cec-ctl", "-d/dev/cec0", "--t0", "--active-source", f"phys-addr={TV_ADDR}"])
+    subprocess.run(["cec-ctl", f"-d{DEV_ID}", f"-t{LOGIC_ADDR}", "--active-source", f"phys-addr={PHY_ADDR}"])
+
+
+@app.on_event("startup")
+async def startup_event():
+    # Create a shell script to use to output data to tty0
+    with open("/tmp/write_tty") as out_file:
+        out_file.write(f'echo "$1" > /dev/{HDMI_CONSOLE}')
 
 
 @app.get("/")
