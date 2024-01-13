@@ -26,8 +26,10 @@ def grab_hdmi_focus():
 @app.on_event("startup")
 async def startup_event():
     # Create a shell script to use to output data to tty0
-    with open("/tmp/write_tty") as out_file:
-        out_file.write(f'echo "$1" > /dev/{HDMI_CONSOLE}')
+    out_text = f'echo "$1" > /dev/{HDMI_CONSOLE}'
+    print("Preparing write out file with: ", out_text)
+    with open("/tmp/write_tty", "w") as out_file:
+        out_file.write()
 
 
 @app.get("/")

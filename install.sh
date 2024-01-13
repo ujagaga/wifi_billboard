@@ -6,7 +6,7 @@ SCRIPT_FULL_PATH="$(realpath -s $0)"
 SCRIPT_DIR="$(dirname $SCRIPT_FULL_PATH)"
 
 sudo apt update
-sudo apt -y install -y v4l-utils python3-fastapi
+sudo apt -y install -y v4l-utils python3-fastapi uvicorn
 
 SERVICE_NAME=billboard.service
 SERVICE_FILE=/etc/systemd/system/$SERVICE_NAME
