@@ -5,4 +5,4 @@ SCRIPT_FULL_PATH="$(realpath -s $0)"
 SCRIPT_DIR="$(dirname $SCRIPT_FULL_PATH)"
 
 cd $SCRIPT_DIR
-uvicorn wifi_billboard:app --host 0.0.0.0 --port 80
+uvicorn wifi_billboard:app --reload
