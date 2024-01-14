@@ -14,7 +14,7 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates/")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-CLEARANCE = "\n" * 20
+CLEARANCE = "\n" * 40
 
 
 def send_to_monitor(message):
@@ -63,10 +63,10 @@ def post_message(message: Optional[str] = Form("")):
 def api_message(command, message: Optional[str] = Form("")):
     if command == "send":
         send_to_monitor(message)
-        return "OK"
+        return f"OK, M: {message}"
     elif command == "ask":
         send_to_monitor(message)
-        return "OK"
+        return f"OK, M: {message}"
     elif command == "clear":
         send_to_monitor(CLEARANCE)
         return "OK"
