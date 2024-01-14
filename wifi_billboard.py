@@ -14,13 +14,14 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates/")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+CLEARANCE = "\n" * 20
+
 
 def send_to_monitor(message):
-    subprocess.run(['sudo', '/bin/bash', '/tmp/write_tty', message])
-
-
-def grab_hdmi_focus():
+    # Grab HDMI focus
     subprocess.run(["cec-ctl", f"-d{DEV_ID}", f"-t{LOGIC_ADDR}", "--active-source", f"phys-addr={PHY_ADDR}"])
+    # Write message to console
+    subprocess.run(['sudo', '/bin/bash', '/tmp/write_tty', message])
 
 
 @app.on_event("startup")
@@ -53,5 +54,21 @@ def ask_question(question: Optional[str] = Form("")):
 
 @app.post("/message")
 def post_message(message: Optional[str] = Form("")):
+    send_to_monitor(CLEARANCE)
     send_to_monitor(message)
     return RedirectResponse(f"/?message={message}", status_code=status.HTTP_302_FOUND)
+
+
+@app.get("/api/{command}")
+def api_message(command, message: Optional[str] = Form("")):
+    if command == "send":
+        send_to_monitor(message)
+        return "OK"
+    elif command == "ask":
+        send_to_monitor(message)
+        return "OK"
+    elif command == "clear":
+        send_to_monitor(CLEARANCE)
+        return "OK"
+    else:
+        return f"ERROR, unknown command: {command}"
