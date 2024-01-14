@@ -60,7 +60,7 @@ def post_message(message: Optional[str] = Form("")):
 
 
 @app.get("/api/{command}")
-def api_message(command, message: Optional[str] = Form("")):
+def api_message(command, message: str = ""):
     if command == "send":
         send_to_monitor(message)
         return f"OK, M: {message}"
