@@ -16,9 +16,11 @@ form textarea{
 }
 
 form input{
-    width: 100%;
+    width: calc(50% - 4em);
     border: 0;
     background: orange;
     padding: 5px;
     border-radius: 0.5em;
+    margin: 1.5em;
 }
+

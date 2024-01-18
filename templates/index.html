@@ -7,21 +7,16 @@
 </head>
 <body>
     <div class="container">
-        <form method="POST" action="/message" >
-            <textarea id="message" name="message" rows="4" cols="50" placeholder="Say something..." autofocus></textarea>
+        <form method="POST" id="msg_form" action="" >
+            <textarea id="message" name="message" rows="4" cols="50" placeholder="Ask away..." autofocus></textarea>
             <br>
-            <input type="submit" value="OK">
+            <input type="submit" value="Message" onclick="post_message();">
+            <input type="submit" value="Question" onclick="ask_question();">
         </form>
         <p><b>M:</b> {{ message }}</p>
-
-        <form method="POST" action="/question" >
-            <textarea id="question" name="question" rows="4" cols="50" placeholder="Ask away..."></textarea>
-            <br>
-            <input type="submit" value="OK">
-        </form>
-
         <p><b>Q:</b> {{ question }}</p>
         <p><b>A:</b> {{ answer }}</p>
     </div>
 </body>
+<script type="text/javascript" src="{{ url_for('static', path='/index.js') }}"></script>
 </html>
