@@ -1,22 +1,17 @@
 # WiFi Billboard
 
 WiFi accessible billboard to display text via HDMI TV and talk to an AI chat bot. When there is something to write, 
-this device will take over the HDMI display and output text in the main console.
+this device will take over the HDMI display and output text in chromium web browser.
 
 ## Setting up the device
 
-I am using "Raspberry Pi Zero W" with "Raspbian Lite OS" installed. A convenience is that the pi user can execute sudo without password, 
-so if using another linux environment, please note that this might differ. This is done by placing a text file like 
-"/etc/sudoers.d/010_pi-nopasswd" with content:
-
-       pi ALL=(ALL) NOPASSWD: ALL
+I am using "Orange Pi 5" as a multimedia device connected to my TV. This is convenient to display this billboard on TV.
 
 Next steps:
 
-1. Install Raspbian Lite to a micro SD card and setup WiFi connection
-2. All the text will be written to the main console "/dev/tty0", so previewable on HDMI monitor. To setup console font, you can use:
+1. Install v4l-utils so you have cec-ctl app to command HDMI:
 
-       sudo dpkg-reconfigure console-setup
+       sudo apt install v4l-utils
 
 3. To list HDMI devices:
 
@@ -40,6 +35,6 @@ Next steps:
 
 ## NOTE
 
-Just starting the project, so not yet usable
+So far the billboard is working. Need to add AI interface.
 
 
