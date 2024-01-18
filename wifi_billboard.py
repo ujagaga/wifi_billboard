@@ -7,9 +7,13 @@ import starlette.status as status
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
 import subprocess
-from config import DEV_ID, PHY_ADDR, LOGIC_ADDR
+from config import DEV_ID, PHY_ADDR, LOGIC_ADDR, INSTA_USER, INSTA_PASS, INSTA_RECIPIENT, INSTA_TIMEOUT_S
 import os
 import tempfile
+import instagrapi
+import json
+import time
+
 
 temp_dir = tempfile.gettempdir()
 app = FastAPI()
@@ -21,6 +25,49 @@ BILLBOARD_OUT = os.path.join(temp_dir, "wifi_billboard.html")
 CHROME_DATA_DIR = os.path.join(temp_dir, "wifi_bb_chrome_profile")
 
 app.chrome_instance = None
+app.insta_client = None
+
+
+def instagram_login_and_get_ai_user():
+    global app
+
+    send_to = None
+    try:
+        if not app.insta_client:
+            app.insta_client = instagrapi.Client()
+            app.insta_client.login(INSTA_USER, INSTA_PASS)
+
+        send_to = app.insta_client.user_id_from_username(username=INSTA_RECIPIENT)
+    except Exception as e:
+        print("ERROR:", e)
+        app.insta_client.logout()
+        app.insta_client = instagrapi.Client()
+        app.insta_client.login(INSTA_USER, INSTA_PASS)
+
+        send_to = app.insta_client.user_id_from_username(username=INSTA_RECIPIENT)
+
+    return send_to
+
+
+def instagram_do_dialog(message):
+    try:
+        send_to = instagram_login_and_get_ai_user()
+        message_details = app.insta_client.direct_send(text=message, user_ids=[send_to])
+        print('Sent to instagram:', message_details)
+        thread_id = message_details["thread_id"]
+
+        start_time = time.time()
+        while time.time() - start_time < INSTA_TIMEOUT_S:
+            messages = app.insta_client.direct_messages(thread_id=thread_id, amount=1)
+            response = messages[0]
+            if not response.is_sent_by_viewer:
+                print(f"Response in {int(time.time() - start_time)}s: {response.text}")
+                return {"response": response.text, "error": ""}
+        return {"response": "", "error": "Instagram query timed out"}
+
+    except Exception as e:
+        print("ERROR: Failed to send message:", e)
+        return {"response": "", "error": f"{e}"}
 
 
 def create_html(question, answer):
@@ -60,28 +107,29 @@ def close_billboard():
         app.chrome_instance.terminate()
 
 
-def ask_ai(question):
-    return f"Dummy answer to {question}"
-
-
 @app.get("/")
-def index(request: Request, question: str = "", answer: str = "", message: str = ""):
+def index(request: Request, question: str = "", answer: str = "", message: str = "", error: str = ""):
     return templates.TemplateResponse(
         'index.html',
         context={
             'request': request,
             'question': question,
             'answer': answer,
-            'message': message
+            'message': message,
+            'error': error
         }
     )
 
 
 @app.post("/question")
 def ask_question(message: Optional[str] = Form("")):
-    answer = ask_ai(message)
-    send_to_monitor(question=message, answer=answer)
-    return RedirectResponse(f"/?question={message}&answer={answer}", status_code=status.HTTP_302_FOUND)
+    answer = instagram_do_dialog(message)
+    if answer['error']:
+        send_to_monitor(question=message, answer=f"ERROR: {answer['error']}")
+    else:
+        send_to_monitor(question=message, answer=answer['response'])
+
+    return RedirectResponse(f"/?question={message}&answer={answer['response']}&error={answer['error']}", status_code=status.HTTP_302_FOUND)
 
 
 @app.post("/message")
@@ -96,8 +144,12 @@ def api_message(command, message: str = ""):
         send_to_monitor(question="", answer=message)
         return f"OK, M: {message}"
     elif command == "ask":
-        answer = ask_ai(message)
-        send_to_monitor(question=message, answer=answer)
+        answer = instagram_do_dialog(message)
+        if answer["error"]:
+            send_to_monitor(question=message, answer=f"E: {answer['error']}")
+            return f"ERROR: {answer['error']}"
+
+        send_to_monitor(question="", answer=answer['response'])
         return f"OK, A: {answer}"
     elif command == "close":
         close_billboard()

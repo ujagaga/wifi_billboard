@@ -23,4 +23,7 @@ form input{
     border-radius: 0.5em;
     margin: 1.5em;
 }
+.error{
+    color: red;
+}
 
