@@ -10,12 +10,11 @@
         <form method="POST" id="msg_form" action="" >
             <textarea id="message" name="message" rows="4" cols="50" placeholder="Ask away..." autofocus></textarea>
             <br>
-            <input type="submit" value="Message" onclick="post_message();">
-            <input type="submit" value="Msg PI.AI" onclick="ask_question();">
+            <input type="submit" value="Notification" onclick="post_message();">
+            <input type="submit" value="Message PI.AI" onclick="ask_question();">
         </form>
         <p><b>M:</b> {{ message }}</p>
         <p><b>Q:</b> {{ question }}</p>
-        <p><b>A:</b> {{ answer }}</p>
         <p class="error">{{ error }}</p>
     </div>
 </body>

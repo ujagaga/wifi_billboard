@@ -1,12 +1,6 @@
-# Rename this file to "config.py" and adjust parameters as needed
+# Rename this file to "config.py" and adjust parameters if needed
 
 DEV_ID = "/dev/cec0"
 PHY_ADDR = "1.0.0.0"
 LOGIC_ADDR = 0
-HDMI_CONSOLE = "tty0"
 
-# Instagram is used to communicate to Pi AI, so we need credentials
-INSTA_USER = "your_instagram_username"
-INSTA_PASS = "your_instagram_password"
-INSTA_RECIPIENT = "heypi.ai"
-INSTA_TIMEOUT_S = 20
