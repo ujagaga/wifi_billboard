@@ -36,7 +36,6 @@ def instagram_login_and_get_ai_user():
         if not app.insta_client:
             app.insta_client = instagrapi.Client()
             app.insta_client.login(INSTA_USER, INSTA_PASS)
-
         send_to = app.insta_client.user_id_from_username(username=INSTA_RECIPIENT)
     except Exception as e:
         print("ERROR:", e)
@@ -95,6 +94,8 @@ def create_html(question, answer):
 
 
 def send_to_monitor(question, answer):
+    close_billboard()
+
     if create_html(question, answer):
         # Grab HDMI focus
         subprocess.run(["cec-ctl", f"-d{DEV_ID}", f"-t{LOGIC_ADDR}", "--active-source", f"phys-addr={PHY_ADDR}"])
