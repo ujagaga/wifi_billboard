@@ -7,10 +7,9 @@ import starlette.status as status
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
 import subprocess
-from config import DEV_ID, PHY_ADDR, LOGIC_ADDR
+from config import DEV_ID, PHY_ADDR, LOGIC_ADDR, AI_CHAT_BIO
 import os
 import tempfile
-import instagrapi
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -53,7 +52,6 @@ def init_ai_chat():
     app.browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     app.browser.implicitly_wait(2)
     app.browser.get("https://pi.ai/talk")
-    app.browser.minimize_window()
 
 
 def click_button():
@@ -61,7 +59,6 @@ def click_button():
         print("DBG Submitting.")
         wait = WebDriverWait(app.browser, 4)
         wait.until(EC.element_to_be_clickable((By.TAG_NAME, "button"))).click()
-        time.sleep(1)
         return True
     except Exception as e:
         print("CLICK ERR:", e)
@@ -69,15 +66,12 @@ def click_button():
 
 
 def find_text_input_box():
-    try:
-        print("DBG Looking for textarea.")
-        app.browser.find_element(By.TAG_NAME, "textarea")
+    print("DBG Looking for textarea.")
+    textarea = app.browser.find_elements(By.TAG_NAME, "textarea")
+    if textarea:
         return True
-    except Exception as e:
-        print("FIND ERR:", e)
-        pass
-
-    return False
+    else:
+        return False
 
 
 def ask_ai_question(question):
@@ -94,31 +88,17 @@ def ask_ai_question(question):
     return False
 
 
-def check_question_processed(question):
-    try:
-        print("DBG Waiting for question to appear")
-        answer_div = app.browser.find_element(By.CLASS_NAME, "w-full")
-        answer_text = answer_div.text
-
-        print("\tDBG *** answer:", answer_text)
-        return True
-
-    except Exception as e:
-        print("RESPONSE ERR:", e)
-        with open("dbg_out.html", "w") as out_file:
-            out_file.write(app.browser.page_source)
-    return False
-
-
 def ask_ai(question):
     state = ChatState.CHECK_ASK
     start_time = time.time()
     timeout_reached = False
 
-    if not app.browser:
+    if app.chrome_instance:
+        app.chrome_instance.terminate()
+    if app.browser:
+        app.browser.maximize_window()
+    else:
         init_ai_chat()
-
-    app.browser.maximize_window()
 
     while state != ChatState.FINISH and not timeout_reached:
         print("\tDBG STATE:", state)
@@ -183,6 +163,13 @@ def send_to_monitor(message):
         app.chrome_instance = subprocess.Popen(external_app_params)
 
 
+@app.on_event("startup")
+async def startup_event():
+    init_ai_chat()
+    ask_ai(AI_CHAT_BIO)
+    app.browser.minimize_window()
+
+
 @app.get("/")
 def index(request: Request, question: str = "", message: str = "", error: str = ""):
     return templates.TemplateResponse(
@@ -215,7 +202,7 @@ def post_message(message: Optional[str] = Form("")):
 @app.get("/api/{command}")
 def api_message(command, message: str = ""):
     if command == "send":
-        send_to_monitor(answer=message)
+        send_to_monitor(message)
         return f"OK, M: {message}"
 
     elif command == "ask":

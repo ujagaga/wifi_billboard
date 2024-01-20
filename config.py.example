@@ -4,3 +4,9 @@ DEV_ID = "/dev/cec0"
 PHY_ADDR = "1.0.0.0"
 LOGIC_ADDR = 0
 
+# The chat is anonymous, the AI does not remember past chats so we might want to give it some info.
+AI_CHAT_BIO = """
+ Hi! My name is Rada.
+ I live in Novi Sad, Serbia, so I prefer to use Celsius for temperature and the metric system in general.
+ This chat might be used by other members of my family.
+"""
