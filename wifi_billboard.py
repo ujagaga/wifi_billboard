@@ -19,6 +19,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from enum import Enum
+import re
 
 
 class ChatState(Enum):
@@ -41,6 +42,10 @@ CHROME_DATA_DIR = os.path.join(temp_dir, "wifi_bb_chrome_profile")
 MAX_TIMEOUT = 20
 app.chrome_instance = None  # For displaying custom message
 app.browser = None  # For AI chat
+
+
+def is_valid_url(url):
+    return url.startswith("http://") or url.startswith("https://") or url.startswith("www.")
 
 
 def init_ai_chat():
@@ -156,11 +161,17 @@ def close_billboard():
 def send_to_monitor(message):
     close_billboard()
 
-    if create_html(message):
-        # Grab HDMI focus
-        subprocess.run(["cec-ctl", f"-d{DEV_ID}", f"-t{LOGIC_ADDR}", "--active-source", f"phys-addr={PHY_ADDR}"])
-        external_app_params = ["/usr/bin/google-chrome-stable", BILLBOARD_OUT, "--new-window", f"--user-data-dir={CHROME_DATA_DIR}", "--start-maximized"]
+    # Grab HDMI focus
+    subprocess.run(["cec-ctl", f"-d{DEV_ID}", f"-t{LOGIC_ADDR}", "--active-source", f"phys-addr={PHY_ADDR}"])
+
+    if is_valid_url(message):
+        external_app_params = ["/usr/bin/google-chrome-stable", message, "--new-window",
+                               f"--user-data-dir={CHROME_DATA_DIR}", "--start-maximized"]
         app.chrome_instance = subprocess.Popen(external_app_params)
+    else:
+        if create_html(message):
+            external_app_params = ["/usr/bin/google-chrome-stable", BILLBOARD_OUT, "--new-window", f"--user-data-dir={CHROME_DATA_DIR}", "--start-maximized"]
+            app.chrome_instance = subprocess.Popen(external_app_params)
 
 
 @app.on_event("startup")
