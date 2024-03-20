@@ -13,8 +13,29 @@ SoftwareSerial mySerial(255, UART_TX_PIN); // RX, TX
 
 uint32_t updateTime = 0;
 
+uint8_t btn_test(){
+  uint8_t pressed = 0;
+  if(digitalRead(BTN_1_PIN) == LOW){
+    pressed += 1;
+  }
+  if(digitalRead(BTN_2_PIN) == HIGH){
+    pressed += 2;
+  }
+  if(digitalRead(BTN_3_PIN) == LOW){
+    pressed += 4;
+  }
+  if(digitalRead(BTN_4_PIN) == LOW){
+    pressed += 8;
+  }
+
+  return pressed;
+
+}
+
 void setup(){
   mySerial.begin(115200);
+  mySerial.write((uint8_t)MSG_START);
+  mySerial.write((uint8_t)0); 
 
   pinMode(BTN_1_PIN, INPUT_PULLUP);
   pinMode(BTN_2_PIN, INPUT);
@@ -24,31 +45,18 @@ void setup(){
 
 void loop(){
   if((millis() - updateTime) > UPDATE_TIMEOUT){
-    bool btn1 = digitalRead(BTN_1_PIN);
-    bool btn2 = digitalRead(BTN_2_PIN);
-    bool btn3 = digitalRead(BTN_3_PIN);
-    bool btn4 = digitalRead(BTN_4_PIN);
+    uint8_t press_1 = btn_test();
+    uint8_t press_2 = btn_test();
+    uint8_t press_3 = btn_test();
 
-    if(!btn1){
-      mySerial.write(MSG_START);
-      mySerial.write(1);      
-    }else if(btn2){
-      mySerial.write(MSG_START);
-      mySerial.write(2);      
-    }else if(!btn3){
-      mySerial.write(MSG_START);
-      mySerial.write(3);      
-    }else if(!btn4){
-      mySerial.write(MSG_START);
-      mySerial.write(4);      
-    }
+    if((press_1 == press_2 == press_3) && (press_1 > 0)){
+      mySerial.write((uint8_t)MSG_START);
+      mySerial.write(press_1); 
+    }    
 
-    while(btn1 || btn2 || btn3 || btn4){
-      btn1 = digitalRead(BTN_1_PIN);
-      btn2 = digitalRead(BTN_2_PIN);
-      btn3 = digitalRead(BTN_3_PIN);
-      btn4 = digitalRead(BTN_4_PIN);
-      delay(100);
+    while(press_1 > 0){
+      delay(10);
+      press_1 = btn_test();      
     }
 
     updateTime = millis();
